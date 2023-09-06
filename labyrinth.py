@@ -5,16 +5,13 @@ import getopt
 import numpy as np
 import matplotlib.pyplot as plt
 
-# straight_ratio -> straightness/ direction change laziness (-l)
-# side_length -> size  (-s)
-# root_factor -> root_factor, relative root length (-r)
 
 def get_options():
 
     # default options
     opts = dict()
-    opts["side_length"] = 63  # image side length
-    opts["straight_ratio"] = 0.7  # range 0-1, controls "laziness" of root direction change. Higher value leads to more straight lines.
+    opts["size"] = 63  # image side length
+    opts["laziness"] = 0.7  # range 0-1, controls "laziness" of root direction change. Higher value leads to more straight lines.
     opts["root_factor"] = 1.3  # maximum length of one root in multiples of side length
     opts["cmap"] = "viridis"  # colormap for the pyplot
     opts["outfile"] = None  # output filename
@@ -24,13 +21,17 @@ def get_options():
     for opt_raw, arg_raw in opts_raw:
 
         if opt_raw == "-s":
-            opts["side_length"] = int(arg_raw)
+            opts["size"] = int(arg_raw)
+            assert opts["size"] % 2, "size must be odd!"
+            assert 0 < opts["size"] < 256, "size must be between 0 and 256"
 
-        elif opt_raw == "-r":
-            opts["straight_ratio"] = float(arg_raw)
-        
         elif opt_raw == "-l":
+            opts["laziness"] = float(arg_raw)
+            assert 0 <= opts["laziness"] <= 1, "laziness must be between 0 and 1"
+        
+        elif opt_raw == "-r":
             opts["root_factor"] = float(arg_raw)
+            assert opts["root_factor"] > 0, "root_factor should be above 0"
         
         elif opt_raw == "-o":
             opts["outfile"] = arg_raw
@@ -43,10 +44,10 @@ def get_options():
             print("labyrinth.py [-s <side_length>] [-r <straight_ratio>] [-l <root_factor>]"
                   " [-c <colormap name>] [-o <output file>] [-h]")
             print("")
-            print("-s:  side_length in squares. Must be odd and below 256. Default: 63")
-            print("-r:  straight_ratio in range [0, 1] defines the laziness of direction change. "
+            print("-s:  size/ side length in squares. Must be odd and below 256. Default: 63")
+            print("-l:  laziness in range [0, 1] defines the laziness of direction change. "
                   "A higher number leads to more straight lines. Default: 0.7")
-            print("-l:  root_factor defines the maximum relative maximum length of a root the labyrinth walls consist of. "
+            print("-r:  root_factor defines the maximum relative maximum length of a root the labyrinth walls consist of. "
                   "Normally this doesn't need to be adapted. Default: 1.3")
             print("-c:  colormap name for the pyplot. See the matplotlib documentation. Default: viridis")
             print("-o:  Specify a filepath string with filetype.With no output file a pyplot windows opens. "
@@ -56,16 +57,13 @@ def get_options():
             exit(0)
 
 
-    assert opts["side_length"] % 2, "side_length must be odd!"
-    assert opts["side_length"] < 256, "side_length should be below 256"
-
     return opts
 
 
 def init_labyrinth(opts):
 
     # output array
-    arr = np.ones((opts["side_length"]+6, opts["side_length"]+6), dtype=bool)
+    arr = np.ones((opts["size"]+6, opts["size"]+6), dtype=bool)
 
     # inner area is empty
     arr[3:-3, 3:-3] = 0
@@ -127,8 +125,8 @@ def get_move_arrays(arr):
 
 def grow_labyrinth(arr_p, opts):
 
-    ind_range = np.arange(opts["side_length"]**2)
-    N = max(1, opts["root_factor"]*opts["side_length"] // 2)
+    ind_range = np.arange(opts["size"]**2)
+    N = max(1, opts["root_factor"]*opts["size"] // 2)
     
     # grow roots as long as there is space
     while 1:
@@ -143,7 +141,7 @@ def grow_labyrinth(arr_p, opts):
 
         # randomly choose a root starting position where there is room to grow
         ind = np.random.choice(ind_range, p=ma.flatten()/np.count_nonzero(ma))
-        iy, ix = divmod(ind, opts["side_length"])
+        iy, ix = divmod(ind, opts["size"])
 
         # grow a root
         for i in range(int(N)):
@@ -157,7 +155,7 @@ def grow_labyrinth(arr_p, opts):
                 break
 
             # randomly select valid direction or in random cases go in old direction (if existing)
-            if not i or not mm[mind] or np.random.sample() > opts["straight_ratio"]:
+            if not i or not mm[mind] or np.random.sample() > opts["laziness"]:
                 mind = np.random.choice(4, p=mm/np.count_nonzero(mm))
 
             # grow in chosen direction 
@@ -205,7 +203,7 @@ def plot(arr_p, opts):
             plt.show(block=True)
         else:
             plt.savefig(opts["outfile"], format=None, bbox_inches='tight', 
-                        pad_inches=0, dpi=max(100, opts["side_length"]))
+                        pad_inches=0, dpi=max(100, opts["size"]))
 
 
 if __name__ == '__main__':
