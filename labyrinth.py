@@ -11,12 +11,14 @@ def get_options():
     # default options
     opts = dict()
     opts["size"] = 63  # image side length
-    opts["laziness"] = 0.7  # range 0-1, controls "laziness" of root direction change. Higher value leads to more straight lines.
+    opts["laziness"] = 0.7  # range 0-1, controls "laziness" of root direction change. 
+                            # Higher value leads to more straight lines.
+    opts["bias"] = 0  # direction bias between: -1: up-down, +1: left-right
     opts["root_factor"] = 1.3  # maximum length of one root in multiples of side length
     opts["cmap"] = "viridis"  # colormap for the pyplot
     opts["outfile"] = None  # output filename
 
-    opts_raw, args_raw = getopt.getopt(sys.argv[1:],"s:r:l:o:c:h", [])
+    opts_raw, args_raw = getopt.getopt(sys.argv[1:],"s:r:l:o:c:b:h", [])
 
     for opt_raw, arg_raw in opts_raw:
 
@@ -28,6 +30,10 @@ def get_options():
         elif opt_raw == "-l":
             opts["laziness"] = float(arg_raw)
             assert 0 <= opts["laziness"] <= 1, "laziness must be between 0 and 1"
+        
+        elif opt_raw == "-b":
+            opts["bias"] = float(arg_raw)
+            assert -1 <= opts["bias"] <= 1, "bias must be between -1 and 1"
         
         elif opt_raw == "-r":
             opts["root_factor"] = float(arg_raw)
@@ -44,18 +50,29 @@ def get_options():
             print("labyrinth.py [-s <side_length>] [-r <straight_ratio>] [-l <root_factor>]"
                   " [-c <colormap name>] [-o <output file>] [-h]")
             print("")
-            print("-s:  size/ side length in squares. Must be odd and below 256. Default: 63")
+            print("Builds a random labyrinth using an automatic, random iterative wall growing algorithm.")
+            print("There are two parent roots (outer walls). Sub-roots grow from these parent roots so long as"
+                  " there is enough room to grow in.")
+            print("As both root families aren't allowed to touch, the maze is guaranteed"
+                  " to be a perfect maze (single and unique solution).")
+            print("")
+            print("Depending on the -o parameter (see below) the labyrinth is shown in a window,"
+                  " saved as image or output to the terminal")
+            print("")
+            print("-s:  size / side length in squares. Must be odd and below 256. Default: 63")
             print("-l:  laziness in range [0, 1] defines the laziness of direction change. "
                   "A higher number leads to more straight lines. Default: 0.7")
-            print("-r:  root_factor defines the maximum relative maximum length of a root the labyrinth walls consist of. "
-                  "Normally this doesn't need to be adapted. Default: 1.3")
+            print("-b:  direction bias. Value between -1 and 1. -1 is a large bias in up-down direction, "
+                  "+1 in left-right direction. 0 means no bias. Default: 0")
+            print("-r:  root_factor defines the maximum relative maximum length of a root the labyrinth walls"
+                  " get built of in each iteration. Normally this doesn't need to be adapted. Default: 1.3")
             print("-c:  colormap name for the pyplot. See the matplotlib documentation. Default: viridis")
-            print("-o:  Specify a filepath string with filetype.With no output file a pyplot windows opens. "
-                  "Specify '-o stdout' for terminal output. By default shows the pyplot.")
+            print("-o:  Specify a filepath string including filetype ending. "
+                  "With no output file a pyplot windows opens. Specify '-o stdout' for terminal output. "
+                  "By default a plot window is shown.")
             print("-h:  print this help")
             print("")
             exit(0)
-
 
     return opts
 
@@ -73,6 +90,22 @@ def init_labyrinth(opts):
     arr[-4, 5:] = 1
     arr[:-5, 3] = 1
     arr[5:, -4] = 1
+
+    # for instance, for side_length = 7 it creates:
+    #
+    # + + + + + + + + + + + + +
+    # + + + + + + + + + + + + +             the array is padded to simplify positional handling 
+    # + + + + + + + + + + + + +             (as boundary cases don't need to be handled separately)
+    # + + + x x x x x o o + + +
+    # + + + x o o o o o o + + +             +: set as wall, but won't be visible in output
+    # + + + x o o o o o x + + +             x: mother wall, will be visible in output
+    # + + + x o o o o o x + + +             o: empty space
+    # + + + x o o o o o x + + +
+    # + + + o o o o o o x + + +
+    # + + + o o x x x x x + + +
+    # + + + + + + + + + + + + +
+    # + + + + + + + + + + + + +
+    # + + + + + + + + + + + + +
 
     return arr
 
@@ -104,10 +137,11 @@ def get_move_arrays(arr):
     arrc[::2, 1::2] = False
 
     # check if a three element horizontal line is empty
-    line_empty = lambda y0, y1, x0, x1:      (~arr[y0:y1, x0-1:x1-1]) & (~arr[y0:y1, x0:x1]) & (~arr[y0:y1, x0+1:x1+1])
+    line_not_empty = lambda y0, y1, x0, x1:  arr[y0:y1, x0-1:x1-1] | arr[y0:y1, x0:x1] | arr[y0:y1, x0+1:x1+1]
 
     # check if a 3x3 box is empty
-    box_empty = lambda y0, y1, x0, x1:      line_empty(y0-1, y1-1, x0, x1) & line_empty(y0, y1, x0, x1) & line_empty(y0+1, y1+1, x0, x1)
+    box_not_empty = lambda y0, y1, x0, x1:   line_not_empty(y0-1, y1-1, x0, x1) | line_not_empty(y0, y1, x0, x1)\
+                                             | line_not_empty(y0+1, y1+1, x0, x1)
 
     # coordinate slice of the position to check (marked by x in the diagram above)
     ys, xs = arr.shape
@@ -115,25 +149,34 @@ def get_move_arrays(arr):
     xc0, xc1 = 3, xs-3
 
     # create move arrays
-    move_left  = arrc & box_empty( yc0,   yc1,     xc0-2, xc1-2)
-    move_right = arrc & box_empty( yc0,   yc1,     xc0+2, xc1+2)
-    move_up    = arrc & box_empty( yc0-2, yc1-2,   xc0,   xc1)
-    move_down  = arrc & box_empty( yc0+2, yc1+2,   xc0,   xc1)
+    move_left  = arrc & (~box_not_empty( yc0,   yc1,     xc0-2, xc1-2))
+    move_right = arrc & (~box_not_empty( yc0,   yc1,     xc0+2, xc1+2))
+    move_up    = arrc & (~box_not_empty( yc0-2, yc1-2,   xc0,   xc1))
+    move_down  = arrc & (~box_not_empty( yc0+2, yc1+2,   xc0,   xc1))
 
     return move_left, move_right, move_up, move_down
 
 
+def get_move_arrays_s(arr):
+    # faster version of get_move_arrays for a single root step
+    return (np.count_nonzero(arr[2:5, 0:3]) == 0,  # move_left
+        np.count_nonzero(arr[2:5, 4:7]) == 0,  # move_right
+        np.count_nonzero(arr[0:3, 2:5]) == 0,  # move_up
+        np.count_nonzero(arr[4:7, 2:5]) == 0)  # move_down
+    
+
 def grow_labyrinth(arr_p, opts):
 
+    # init indices and maximum length of a root
     ind_range = np.arange(opts["size"]**2)
     N = max(1, opts["root_factor"]*opts["size"] // 2)
     
-    # grow roots as long as there is space
+    # grow roots as long as there is room left
     while 1:
 
         # get arrays containing valid directions at each pixel
         ml, mr, mu, md = get_move_arrays(arr_p)
-        ma = ml | mr | mu | md
+        ma = ml | mr | mu | md  # move_any
 
         # no room for roots remaining
         if not np.any(ma):
@@ -147,31 +190,32 @@ def grow_labyrinth(arr_p, opts):
         for i in range(int(N)):
 
             # get possible move direction at current point
-            ml, mr, mu, md = get_move_arrays(arr_p[iy-3+3:iy+4+3, ix-3+3:ix+4+3])
-            mm = np.array([ml[0, 0], mr[0, 0], mu[0, 0], md[0, 0]])
+            ml, mr, mu, md = get_move_arrays_s(arr_p[iy-3+3:iy+4+3, ix-3+3:ix+4+3])
+            et = 0.5 + opts["bias"]/1.02/2  # direction weight
+            mm = np.array([ml*et, mr*et, mu*(1-et), md*(1-et)])
 
             # no moves remaining
             if not np.any(mm):
                 break
 
             # randomly select valid direction or in random cases go in old direction (if existing)
-            if not i or not mm[mind] or np.random.sample() > opts["laziness"]:
-                mind = np.random.choice(4, p=mm/np.count_nonzero(mm))
+            if not i or not mm[mdir] or np.random.sample() > opts["laziness"]:
+                mdir = np.random.choice(4, p=mm/np.sum(mm))
 
             # grow in chosen direction 
-            if mind == 0:
+            if mdir == 0:
                 arr_p[iy+3, ix+1:ix+3] = 1
                 ix -= 2
                 
-            elif mind == 1:
+            elif mdir == 1:
                 arr_p[iy+3, ix+4:ix+6] = 1
                 ix += 2
                 
-            elif mind == 2:
+            elif mdir == 2:
                 arr_p[iy+1:iy+3, ix+3] = 1
                 iy -= 2
                 
-            elif mind == 3:
+            elif mdir == 3:
                 arr_p[iy+4:iy+6, ix+3] = 1
                 iy += 2
 
@@ -191,10 +235,12 @@ def plot(arr_p, opts):
         print(out)
     
     else:
-        # create figure
+        # create figure with no axes and toolbar
         plt.rcParams['toolbar'] = 'None'
         plt.figure(figsize=(6, 6))
         plt.axes().set_axis_off()
+
+        # show the figure in a tight layout
         plt.imshow(arr, cmap=opts["cmap"])
         plt.tight_layout()
 

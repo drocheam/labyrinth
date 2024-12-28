@@ -12,6 +12,7 @@ err=0
 ./labyrinth.py -s 53 -o stdout > /dev/null
 ./labyrinth.py -l 0.5 -o stdout > /dev/null
 ./labyrinth.py -r 1.9 -o stdout > /dev/null
+./labyrinth.py -b 0.4 -o stdout > /dev/null
 ./labyrinth.py -c Greys -o stdout > /dev/null
 
 # check valid sizes 
@@ -29,11 +30,13 @@ err=0
 ./labyrinth.py -s 20 -o stdout &> /dev/null && err=1
 ./labyrinth.py -s 257 -o stdout &> /dev/null && err=1
 
-# invalid laziness and root_factor
+# invalid laziness, bias and root_factor
 ./labyrinth.py -l 2 -o stdout &> /dev/null && err=1
 ./labyrinth.py -l -2 -o stdout &> /dev/null && err=1
 ./labyrinth.py -r -2 -o stdout &> /dev/null && err=1
 ./labyrinth.py -r 0 -o stdout &> /dev/null && err=1
+./labyrinth.py -b 2 -o stdout &> /dev/null && err=1
+./labyrinth.py -b -1.1 -o stdout &> /dev/null && err=1
 
 # invalid color map
 ./labyrinth.py -c "abc" &> /dev/null && err=1
