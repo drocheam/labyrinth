@@ -3,8 +3,7 @@
 import sys
 import getopt
 import numpy as np
-import matplotlib.pyplot as plt
-
+# lazy load for matplotlib
 
 def get_options():
 
@@ -47,7 +46,7 @@ def get_options():
 
         elif opt_raw == "-h":
             print("Usage:")
-            print("labyrinth.py [-s <side_length>] [-r <straight_ratio>] [-l <root_factor>]"
+            print("labyrinth.py [-s <side_length>] [-r <root_factor>] [-l <laziness>] [-b <bias>]"
                   " [-c <colormap name>] [-o <output file>] [-h]")
             print("")
             print("Builds a random labyrinth using an automatic, random iterative wall growing algorithm.")
@@ -235,6 +234,9 @@ def plot(arr_p, opts):
         print(out)
     
     else:
+        # lazy load matplotlib
+        import matplotlib.pyplot as plt
+
         # create figure with no axes and toolbar
         plt.rcParams['toolbar'] = 'None'
         plt.figure(figsize=(6, 6))

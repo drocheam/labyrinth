@@ -57,7 +57,7 @@
 ```
 >> python ./labyrinth.py -h
 Usage:
-labyrinth.py [-s <side_length>] [-r <straight_ratio>] [-l <root_factor>] [-c <colormap name>] [-o <output file>] [-h]
+labyrinth.py [-s <side_length>] [-r <root_factor>] [-l <laziness>] [-b <bias>] [-c <colormap name>] [-o <output file>] [-h]
 
 Builds a random labyrinth using an automatic, random iterative wall growing algorithm.
 There are two parent roots (outer walls). Sub-roots grow from these parent roots so long as there is enough room to grow in.
