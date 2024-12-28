@@ -66,8 +66,8 @@ function check_image_size {
     image_file="$1"
 
     # Get the dimensions of the image using the identify command
-    width=$(identify -format "%w" "$image_file")
-    height=$(identify -format "%h" "$image_file")
+    width=$(magick identify -format "%w" "$image_file")
+    height=$(magick identify -format "%h" "$image_file")
 
     # Check if the dimensions are within the specified range
     if (( width < 500 || width > 1500 )) || (( height < 500 || height > 1500 )); then

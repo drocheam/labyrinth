@@ -1,23 +1,22 @@
 # labyrinth
 ## Create labyrinths with Python
  
----
 ### Examples
 
 **Different Sizes**
 
-<img src="./examples/small.png" width="400px"></img>
-<img src="./examples/large.png" width="400px"></img>
+<img src="./examples/small.png" width="300px"></img>&nbsp;&nbsp;
+<img src="./examples/large.png" width="300px"></img>
 
 **Low and Large Laziness Setting**
 
-<img src="./examples/lazy.png" width="400px"></img>
-<img src="./examples/active.png" width="400px"></img>
+<img src="./examples/lazy.png" width="300px"></img>&nbsp;&nbsp;
+<img src="./examples/active.png" width="300px"></img>
 
 **Vertical or Horizontal Direction Bias**
 
-<img src="./examples/up-down-bias.png" width="400px"></img>
-<img src="./examples/left-right-bias.png" width="400px"></img>
+<img src="./examples/up-down-bias.png" width="300px"></img>&nbsp;&nbsp;
+<img src="./examples/left-right-bias.png" width="300px"></img>
 
 **ASCII Mazes**
 
@@ -51,7 +50,6 @@
     #I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I
 ```
 
----
 ### Usage
 
 ```
@@ -75,7 +73,6 @@ Depending on the -o parameter (see below) the labyrinth is shown in a window, sa
 
 ```
 
----
 ### Algorithm
 
 Builds a random labyrinth using an automatic, random iterative wall growing algorithm.
@@ -88,13 +85,11 @@ See the commented program code for more details.
 
 I came up with this algorithm, but maybe it already exists somewhere else.
 
----
 ### Requirements
 
 The required libraries are numpy and matplotlib.
 A python version above 3.10 is recommended.
 
----
 ### Similar tools
 
 * [Lapyrinth](https://github.com/Pietot/Lapyrinth) by Baptiste Blasquez.
