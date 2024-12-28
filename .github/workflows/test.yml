@@ -22,8 +22,8 @@ jobs:
     # needed for the x-server to work
     - name: Setup headless display
       uses: pyvista/setup-headless-display-action@v2
-    
-    steps:
+   
+    # set up imagemagick
     - name: Install imagemagick
       uses: mfinelli/setup-imagemagick@v5
     
