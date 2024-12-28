@@ -37,6 +37,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install numpy matplotlib
 
+    steps:
     - name: Test
       uses: mfinelli/setup-imagemagick@v5
       # see https://github.com/actions/runner/issues/241#issuecomment-842566950
