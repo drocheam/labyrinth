@@ -86,6 +86,9 @@ echo "image size test"
 ./labyrinth.py -s 255 -o "test.png" && check_image_size "test.png"
 rm "test.png"
 
+echo "performed all tests"
 
 # print to stderr if error flag is set
-[ $err -eq 1 ] && echo "Tests failed" >&2
+[ $err -eq 1 ] && echo "some tests failed" >&2 && exit 2
+
+exit 0
