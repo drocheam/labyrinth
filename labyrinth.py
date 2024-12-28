@@ -67,7 +67,7 @@ def get_options():
             print("-r:  root_factor defines the maximum relative maximum length of a root the labyrinth walls"
                   " get built of in each iteration. Normally this doesn't need to be adapted. Default: 1.3")
             print("-c:  colormap name for the pyplot. See the matplotlib documentation. Default: viridis")
-            print("-o:  Specify a filepath string including filetype ending. "
+            print("-o:  specify a filepath string including filetype ending. "
                   "With no output file a pyplot windows opens. Specify '-o stdout' for terminal output. "
                   "By default a plot window is shown.")
             print("-h:  print this help")

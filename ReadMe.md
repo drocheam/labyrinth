@@ -1,7 +1,9 @@
 # labyrinth
 ## Create labyrinths with Python
- 
-### Examples
+
+---
+
+## Examples
 
 **Different Sizes**
 
@@ -18,7 +20,7 @@
 <img src="./examples/up-down-bias.png" width="300px"></img>&nbsp;&nbsp;
 <img src="./examples/left-right-bias.png" width="300px"></img>
 
-**ASCII Mazes**
+**ASCII Maze**
 
 ```
 #I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I
@@ -50,7 +52,7 @@
     #I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I#I
 ```
 
-### Usage
+## Usage
 
 ```
 >> python ./labyrinth.py -h
@@ -68,12 +70,12 @@ Depending on the -o parameter (see below) the labyrinth is shown in a window, sa
 -b:  direction bias. Value between -1 and 1. -1 is a large bias in up-down direction, +1 in left-right direction. 0 means no bias. Default: 0
 -r:  root_factor defines the maximum relative maximum length of a root the labyrinth walls get built of in each iteration. Normally this doesn't need to be adapted. Default: 1.3
 -c:  colormap name for the pyplot. See the matplotlib documentation. Default: viridis
--o:  Specify a filepath string including filetype ending. With no output file a pyplot windows opens. Specify '-o stdout' for terminal output. By default a plot window is shown.
+-o:  specify a filepath string including filetype ending. With no output file a pyplot windows opens. Specify '-o stdout' for terminal output. By default a plot window is shown.
 -h:  print this help
 
 ```
 
-### Algorithm
+## Algorithm
 
 Builds a random labyrinth using an automatic, random iterative wall growing algorithm.
 There are two parent roots (outer walls). Sub-roots grow from these parent roots so long as there is enough room to grow in.
@@ -85,12 +87,12 @@ See the commented program code for more details.
 
 I came up with this algorithm, but maybe it already exists somewhere else.
 
-### Requirements
+## Requirements
 
 The required libraries are numpy and matplotlib.
 A python version above 3.10 is recommended.
 
-### Similar tools
+## Similar Tools
 
 * [Lapyrinth](https://github.com/Pietot/Lapyrinth) by Baptiste Blasquez.
 * [lapyrinth](https://github.com/will2dye4/labyrinth) by William Dye.

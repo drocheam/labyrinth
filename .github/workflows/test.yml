@@ -3,7 +3,7 @@ name: Functionality Test
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   install-and-test:
@@ -23,6 +23,10 @@ jobs:
     - name: Setup headless display
       uses: pyvista/setup-headless-display-action@v2
     
+    steps:
+    - name: Install imagemagick
+      uses: mfinelli/setup-imagemagick@v5
+    
     # set up python and dependencies
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -30,7 +34,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo apt-get install -y imagemagick
         python -m pip install --upgrade pip
         python -m pip install numpy matplotlib
 
