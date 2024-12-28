@@ -9,6 +9,7 @@ err=0
 ./labyrinth.py -o stdout > /dev/null
 
 # check valid parameters
+echo "parameter test"
 ./labyrinth.py -s 53 -o stdout > /dev/null
 ./labyrinth.py -l 0.5 -o stdout > /dev/null
 ./labyrinth.py -r 1.9 -o stdout > /dev/null
@@ -16,6 +17,7 @@ err=0
 ./labyrinth.py -c Greys -o stdout > /dev/null
 
 # check valid sizes 
+echo "size test"
 ./labyrinth.py -s 1 -o stdout &> /dev/null
 ./labyrinth.py -s 3 -o stdout &> /dev/null
 ./labyrinth.py -s 5 -o stdout &> /dev/null
@@ -25,6 +27,7 @@ err=0
 ./labyrinth.py -s 255 -o stdout &> /dev/null
 
 # invalid sizes throw
+echo "invalid parameters test"
 ./labyrinth.py -s 0 -o stdout &> /dev/null && err=1
 ./labyrinth.py -s -1 -o stdout &> /dev/null && err=1
 ./labyrinth.py -s 20 -o stdout &> /dev/null && err=1
@@ -46,6 +49,7 @@ err=0
 
 
 # save some formats
+echo "file format test"
 ./labyrinth.py -o "test.png" && rm "test.png"
 ./labyrinth.py -o "test.pdf" && rm "test.pdf"
 ./labyrinth.py -o "test.jpg" && rm "test.jpg"
@@ -76,10 +80,11 @@ function check_image_size {
 }
 
 # check image sizes
-#./labyrinth.py -o "test.png" && check_image_size "test.png"
-#./labyrinth.py -s 1 -o "test.png" && check_image_size "test.png"
-#./labyrinth.py -s 255 -o "test.png" && check_image_size "test.png"
-#rm "test.png"
+echo "image size test"
+./labyrinth.py -o "test.png" && check_image_size "test.png"
+./labyrinth.py -s 1 -o "test.png" && check_image_size "test.png"
+./labyrinth.py -s 255 -o "test.png" && check_image_size "test.png"
+rm "test.png"
 
 
 # print to stderr if error flag is set
