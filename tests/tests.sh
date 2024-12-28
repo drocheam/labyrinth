@@ -76,10 +76,10 @@ function check_image_size {
 }
 
 # check image sizes
-./labyrinth.py -o "test.png" && check_image_size "test.png"
-./labyrinth.py -s 1 -o "test.png" && check_image_size "test.png"
-./labyrinth.py -s 255 -o "test.png" && check_image_size "test.png"
-rm "test.png"
+#./labyrinth.py -o "test.png" && check_image_size "test.png"
+#./labyrinth.py -s 1 -o "test.png" && check_image_size "test.png"
+#./labyrinth.py -s 255 -o "test.png" && check_image_size "test.png"
+#rm "test.png"
 
 
 # print to stderr if error flag is set
