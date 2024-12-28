@@ -24,9 +24,13 @@ jobs:
       uses: pyvista/setup-headless-display-action@v2
    
     # set up imagemagick
-    #- name: Install imagemagick
-      #uses: mfinelli/setup-imagemagick@v5
-    
+    - name: Install imagemagick
+      uses: mfinelli/setup-imagemagick@v5
+   
+    # check magick
+    - name: Check dependencies
+      run: magick -version
+
     # set up python and dependencies
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -37,9 +41,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install numpy matplotlib
 
-    steps:
     - name: Test
-      uses: mfinelli/setup-imagemagick@v5
       # see https://github.com/actions/runner/issues/241#issuecomment-842566950
       #shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
       run: |
