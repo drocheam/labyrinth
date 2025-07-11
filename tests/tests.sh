@@ -9,15 +9,14 @@ err=0
 ./labyrinth.py -o stdout > /dev/null
 
 # check valid parameters
-echo "parameter test"
 ./labyrinth.py -s 53 -o stdout > /dev/null
 ./labyrinth.py -l 0.5 -o stdout > /dev/null
 ./labyrinth.py -r 1.9 -o stdout > /dev/null
 ./labyrinth.py -b 0.4 -o stdout > /dev/null
 ./labyrinth.py -c Greys -o stdout > /dev/null
+echo "Parameter tests finished"
 
 # check valid sizes 
-echo "size test"
 ./labyrinth.py -s 1 -o stdout &> /dev/null
 ./labyrinth.py -s 3 -o stdout &> /dev/null
 ./labyrinth.py -s 5 -o stdout &> /dev/null
@@ -25,9 +24,9 @@ echo "size test"
 ./labyrinth.py -s 21 -o stdout &> /dev/null
 ./labyrinth.py -s 121 -o stdout &> /dev/null
 ./labyrinth.py -s 255 -o stdout &> /dev/null
+echo "Size tests finished"
 
 # invalid sizes throw
-echo "invalid parameters test"
 ./labyrinth.py -s 0 -o stdout &> /dev/null && err=1
 ./labyrinth.py -s -1 -o stdout &> /dev/null && err=1
 ./labyrinth.py -s 20 -o stdout &> /dev/null && err=1
@@ -47,15 +46,16 @@ echo "invalid parameters test"
 # invalid parameter type
 ./labyrinth.py -x -o stdout &> /dev/null && err=1
 
+echo "Invalid parameters tests finished"
 
 # save some formats
-echo "file format test"
 ./labyrinth.py -o "test.png" && rm "test.png"
 ./labyrinth.py -o "test.pdf" && rm "test.pdf"
 ./labyrinth.py -o "test.jpg" && rm "test.jpg"
 ./labyrinth.py -o "test.jpeg" && rm "test.jpeg"
 ./labyrinth.py -o "test.webp" && rm "test.webp"
 ./labyrinth.py -o "test.svg" && rm "test.svg"
+echo "Image type tests finished"
 
 # save without ending
 ./labyrinth.py -o "test" && rm "test.png"
@@ -80,15 +80,15 @@ function check_image_size {
 }
 
 # check image sizes
-echo "image size test"
 ./labyrinth.py -o "test.png" && check_image_size "test.png"
 ./labyrinth.py -s 1 -o "test.png" && check_image_size "test.png"
 ./labyrinth.py -s 255 -o "test.png" && check_image_size "test.png"
 rm "test.png"
+echo "Image size tests finished"
 
-echo "performed all tests"
+echo "All tests finished"
 
 # print to stderr if error flag is set
-[ $err -eq 1 ] && echo "some tests failed" >&2 && exit 2
+[ $err -eq 1 ] && echo "Some tests failed" >&2 && exit 2
 
 exit 0

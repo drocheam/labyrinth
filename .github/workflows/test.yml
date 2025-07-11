@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
       fail-fast: false
     runs-on: ubuntu-latest    
     timeout-minutes: 20
@@ -21,11 +21,13 @@ jobs:
       
     # needed for the x-server to work
     - name: Setup headless display
-      uses: pyvista/setup-headless-display-action@v2
+      uses: pyvista/setup-headless-display-action@v4
+      with:
+        qt: true
    
     # set up imagemagick
     - name: Install imagemagick
-      uses: mfinelli/setup-imagemagick@v5
+      uses: mfinelli/setup-imagemagick@v6
    
     # check magick
     - name: Check imagemagick
@@ -45,8 +47,5 @@ jobs:
       run: ./labyrinth.py -o stdout
 
     - name: Test
-      # see https://github.com/actions/runner/issues/241#issuecomment-842566950
-      #shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
-      run: |
-        ./tests/tests.sh
+      run: ./tests/tests.sh
 
