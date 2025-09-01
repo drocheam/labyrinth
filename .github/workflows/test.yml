@@ -27,7 +27,7 @@ jobs:
    
     # set up imagemagick
     - name: Install imagemagick
-      uses: mfinelli/setup-imagemagick@v6
+      uses: mfinelli/setup-imagemagick@v7
    
     # check magick
     - name: Check imagemagick
