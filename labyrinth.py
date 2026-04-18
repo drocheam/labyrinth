@@ -135,63 +135,72 @@ def get_move_arrays(arr):
     arrc[1::2, ::2] = False
     arrc[::2, 1::2] = False
 
-    # check if a three element horizontal line is empty
-    line_not_empty = lambda y0, y1, x0, x1:  arr[y0:y1, x0-1:x1-1] | arr[y0:y1, x0:x1] | arr[y0:y1, x0+1:x1+1]
+    is_empty = ~arrc
 
-    # check if a 3x3 box is empty
-    box_not_empty = lambda y0, y1, x0, x1:   line_not_empty(y0-1, y1-1, x0, x1) | line_not_empty(y0, y1, x0, x1)\
-                                             | line_not_empty(y0+1, y1+1, x0, x1)
+    # check region around each point (around position x)
+    valid_c = np.zeros_like(arrc, dtype=bool)
+    valid_c[1:-1, 1:-1] = (
+        is_empty[:-2, :-2] & is_empty[:-2, 1:-1] & is_empty[:-2, 2:] & # upper row
+        is_empty[1:-1, :-2] & is_empty[1:-1, 1:-1] & is_empty[1:-1, 2:] & # center row
+        is_empty[2:, :-2]  & is_empty[2:, 1:-1]  & is_empty[2:, 2:]   # lower row
+    )
+    
+    # combine all direction cases for c
+    any_valid_x = np.zeros_like(arrc, dtype=bool)
+    any_valid_x[:, 2:] |= valid_c[:, :-2]  # valid left
+    any_valid_x[:, :-2] |= valid_c[:, 2:]  # valid right
+    any_valid_x[2:, :] |= valid_c[:-2, :]  # valid up
+    any_valid_x[:-2, :] |= valid_c[2:, :]  # valid down
 
-    # coordinate slice of the position to check (marked by x in the diagram above)
-    ys, xs = arr.shape
-    yc0, yc1 = 3, ys-3
-    xc0, xc1 = 3, xs-3
-
-    # create move arrays
-    move_left  = arrc & (~box_not_empty( yc0,   yc1,     xc0-2, xc1-2))
-    move_right = arrc & (~box_not_empty( yc0,   yc1,     xc0+2, xc1+2))
-    move_up    = arrc & (~box_not_empty( yc0-2, yc1-2,   xc0,   xc1))
-    move_down  = arrc & (~box_not_empty( yc0+2, yc1+2,   xc0,   xc1))
-
-    return move_left, move_right, move_up, move_down
+    return arrc & any_valid_x  # valid movement and starting position
 
 
 def get_move_arrays_s(arr):
     # faster version of get_move_arrays for a single root step
-    return (np.count_nonzero(arr[2:5, 0:3]) == 0,  # move_left
-        np.count_nonzero(arr[2:5, 4:7]) == 0,  # move_right
-        np.count_nonzero(arr[0:3, 2:5]) == 0,  # move_up
-        np.count_nonzero(arr[4:7, 2:5]) == 0)  # move_down
-    
+    return np.array([np.count_nonzero(arr[2:5, 0:3]) == 0,  # move_left
+                     np.count_nonzero(arr[2:5, 4:7]) == 0,  # move_right
+                     np.count_nonzero(arr[0:3, 2:5]) == 0,  # move_up
+                     np.count_nonzero(arr[4:7, 2:5]) == 0], dtype=np.float64)  # move_down
+
+def fast_choice4(p):
+    r = np.random.random()
+    if r < p[0]:
+        return 0
+    elif r < p[0] + p[1]:
+        return 1
+    elif r < p[0] + p[1] + p[2]:
+        return 2
+    else:
+        return 3
 
 def grow_labyrinth(arr_p, opts):
 
     # init indices and maximum length of a root
-    ind_range = np.arange(opts["size"]**2)
     N = max(1, opts["root_factor"]*opts["size"] // 2)
+
+    # direction scaling vector
+    et = 0.5 + opts["bias"]/1.02/2  # direction weight
+    dir_scale = np.array([et, et, (1-et), (1-et)])
     
     # grow roots as long as there is room left
     while 1:
 
         # get arrays containing valid directions at each pixel
-        ml, mr, mu, md = get_move_arrays(arr_p)
-        ma = ml | mr | mu | md  # move_any
-
-        # no room for roots remaining
-        if not np.any(ma):
-            break
+        ma = get_move_arrays(arr_p)
 
         # randomly choose a root starting position where there is room to grow
-        ind = np.random.choice(ind_range, p=ma.flatten()/np.count_nonzero(ma))
+        idx = np.flatnonzero(ma)
+        if not len(idx): # no room for roots remaining
+            break
+        ind = idx[np.random.randint(len(idx))]
         iy, ix = divmod(ind, opts["size"])
 
         # grow a root
         for i in range(int(N)):
 
             # get possible move direction at current point
-            ml, mr, mu, md = get_move_arrays_s(arr_p[iy-3+3:iy+4+3, ix-3+3:ix+4+3])
-            et = 0.5 + opts["bias"]/1.02/2  # direction weight
-            mm = np.array([ml*et, mr*et, mu*(1-et), md*(1-et)])
+            mm = get_move_arrays_s(arr_p[iy-3+3:iy+4+3, ix-3+3:ix+4+3])
+            mm *= dir_scale
 
             # no moves remaining
             if not np.any(mm):
@@ -199,23 +208,23 @@ def grow_labyrinth(arr_p, opts):
 
             # randomly select valid direction or in random cases go in old direction (if existing)
             if not i or not mm[mdir] or np.random.sample() > opts["laziness"]:
-                mdir = np.random.choice(4, p=mm/np.sum(mm))
+                mdir = fast_choice4(mm/mm.sum())
 
             # grow in chosen direction 
             if mdir == 0:
-                arr_p[iy+3, ix+1:ix+3] = 1
+                arr_p[iy+3, ix+1:ix+3] = True
                 ix -= 2
                 
             elif mdir == 1:
-                arr_p[iy+3, ix+4:ix+6] = 1
+                arr_p[iy+3, ix+4:ix+6] = True
                 ix += 2
                 
             elif mdir == 2:
-                arr_p[iy+1:iy+3, ix+3] = 1
+                arr_p[iy+1:iy+3, ix+3] = True
                 iy -= 2
                 
             elif mdir == 3:
-                arr_p[iy+4:iy+6, ix+3] = 1
+                arr_p[iy+4:iy+6, ix+3] = True
                 iy += 2
 
 
