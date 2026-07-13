@@ -27,7 +27,7 @@ jobs:
    
     # set up imagemagick
     - name: Install imagemagick
-      uses: Haerezis/setup-imagemagick@236c0697dd7233bedfdc007308e6566c1eb83cdb # temporarily using fork until https://github.com/mfinelli/setup-imagemagick/issues/571 is fixed
+      uses: mfinelli/setup-imagemagick@v8 
    
     # check magick
     - name: Check imagemagick
